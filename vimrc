@@ -2,94 +2,30 @@
 "  COMPLIANT-VIM  |  vimrc  |  ONE FILE  |  OFFLINE  |  NO PLUGINS
 "
 "  WHAT THIS FILE IS
-"    Colors, editor settings and a few small search/format helpers, written
-"    in plain Vim script. Paste it into ~/.vimrc. Nothing else is needed.
+"    Colors and display settings ONLY (aesthetics + accessibility).
+"    Paste it into ~/.vimrc. Nothing else is needed.
 "
 "  WHAT THIS FILE DOES NOT DO   (security reviewers: grep to confirm)
-"    - NO network access of any kind. No git, curl, wget, ssh, scp, http.
-"    - NO plugin manager, NO downloads, NO packages, NO third-party code.
-"    - NO python/lua/ruby/perl/tcl interface calls.
-"    - NO changes outside Vim: colors only change how YOUR terminal draws
-"      text inside this Vim window. They do not touch the system, other
-"      programs, other users, or any file contents.
-"    - NO reading of other users' files or system configuration.
+"    - NO key mappings, NO editing behavior changes, NO commands that edit text.
+"    - NO external programs (no system / systemlist), NO network, NO plugins.
+"    - NO files created, NO swap/backup/undo/viminfo settings touched.
+"    - Colors only change how YOUR terminal draws text inside this Vim window.
 "
-"  EXTERNAL PROGRAMS IT CAN RUN (all local, all standard, all optional)
-"    find, grep      used by :Ff and :Gr (file / text search into quickfix)
-"    clang-format    used by :Fmt ONLY IF already installed; else built-in
-"    That is the complete list. Search this file for system( / systemlist(.
-"
-"  FILES IT MAY CREATE
-"    ~/.vim/swap/    swap files (mode 0700) so they stop littering project
-"                    directories. Set s:swap_mode = 'off' below for none.
-"    ~/.viminfo      Vim's normal history file, with register contents
-"                    DISABLED so yanked text is never written to disk.
-"
-"  Use :Keys inside Vim for the cheat sheet.   Leader key = <Space>
+"  Switch theme:  :Theme <name>   (night warm frost hc paper)
+"  or start Vim with  CVIM_THEME=<name>  set in the environment.
 "##############################################################################
-
-set nocompatible
-let mapleader = ' '
 
 " ---- knobs you may want to change -----------------------------------------
 let s:default_theme = 'night'   " night | warm | frost | hc | paper
-let s:swap_mode     = 'central' " 'central' = ~/.vim/swap | 'off' = no swap | 'default'
-let s:shiftwidth    = 4
-let s:expandtab     = 1         " 1 = spaces, 0 = tabs
 let s:colorcolumn   = 100       " 0 = no guide line
 " ----------------------------------------------------------------------------
 
-" ---- hardening ------------------------------------------------------------
-set nomodeline modelines=0      " never obey settings embedded in files
-set noexrc secure               " never load .vimrc/.exrc from the cwd
-set viminfo='200,<0,s0,:200,/100,h   " history yes, register contents NEVER saved
-set noundofile                  " no persistent-undo copies of file contents
-set nobackup writebackup
-
-if s:swap_mode ==# 'off'
-  set noswapfile
-elseif s:swap_mode ==# 'central'
-  let s:swapdir = expand('~/.vim/swap')
-  if !isdirectory(s:swapdir)
-    silent! call mkdir(s:swapdir, 'p', 0700)
-  endif
-  if isdirectory(s:swapdir)
-    let &directory = s:swapdir . '//'   " // = full-path names, no collisions
-  endif
-endif
-
-" ---- core behaviour -------------------------------------------------------
+" ---- display only ---------------------------------------------------------
 syntax on
-filetype plugin indent on
-set encoding=utf-8 fileformats=unix,dos
-set hidden                      " switch buffers without saving first
-set autoread
-set backspace=indent,eol,start
-set history=1000
-set updatetime=1000 ttimeout ttimeoutlen=10
-set mouse=a
-silent! set ttymouse=sgr
-set splitright splitbelow
-set scrolloff=8 sidescrolloff=8
-set nowrap nofoldenable
-set display+=lastline
-set nrformats-=octal
-set incsearch hlsearch ignorecase smartcase
-set wildmenu wildmode=longest:full,full
-silent! set wildoptions=pum,fuzzy
-set wildignore+=*.o,*.obj,*.a,*.so,*.d,*.swp,*~,*/.git/*,*/node_modules/*
-set path+=**                    " :find foo<Tab> searches below the cwd
-set tags=./tags;,tags
-set autoindent
-let &shiftwidth  = s:shiftwidth
-let &softtabstop = s:shiftwidth
-let &tabstop     = s:shiftwidth
-let &expandtab   = s:expandtab
-if s:colorcolumn > 0 | let &colorcolumn = s:colorcolumn | endif
 set number relativenumber cursorline
-set showcmd ruler laststatus=2
+set laststatus=2
 set list listchars=tab:>-,nbsp:+   " tabs show as >--- ; spots mixed indent
-packadd! matchit                " ships with Vim: % jumps #if/#endif etc.
+if s:colorcolumn > 0 | let &colorcolumn = s:colorcolumn | endif
 
 " Cursor shape per mode (bar in insert, block in normal): easy to see.
 " Only escape codes sent to the terminal; harmless if unsupported.
@@ -99,26 +35,6 @@ if &term !~# 'linux'
   let &t_EI = "\<Esc>[2 q"
   let &t_te = "\<Esc>[0 q" . &t_te
 endif
-
-" ---- C / C++ --------------------------------------------------------------
-augroup cvim_ft
-  autocmd!
-  autocmd BufRead,BufNewFile *.tpp,*.ipp,*.inl setfiletype cpp
-  autocmd FileType c,cpp setlocal cindent cinoptions=:0,l1,g0,N-s,E-s,t0,(0,W4,j1,J1
-  autocmd FileType * setlocal formatoptions-=o formatoptions+=j
-  autocmd QuickFixCmdPost make,grep,cgetexpr cwindow
-  autocmd FileType qf nnoremap <buffer> <silent> <LeftMouse> <LeftMouse><CR>
-augroup END
-let g:c_syntax_for_h = 0
-
-" ---- netrw (built in file explorer) ---------------------------------------
-let g:netrw_banner       = 0
-let g:netrw_liststyle    = 3
-let g:netrw_winsize      = 25
-let g:netrw_altv         = 1
-let g:netrw_hide         = 1
-let g:netrw_list_hide    = '\.swp$,\.swo$,\.o$,\.obj$,\.d$,\~$,^\.git/$'
-let g:netrw_nogx         = 1    " do not hand files/URLs to external openers
 
 " ===========================================================================
 "  THEMES   (pure color tables: hex values only, no code is run from them)
@@ -294,13 +210,6 @@ function! s:StatusIns(ins) abort
   call s:H('StatusLine', p.mlfg, a:ins ? p.ins : p.ml, 'bold')
 endfunction
 
-function! s:Cycle(dir) abort
-  let l:i = index(s:order, get(g:, 'cvim_theme', s:default_theme))
-  let l:i = (l:i + a:dir + len(s:order)) % len(s:order)
-  call s:Apply(s:order[l:i])
-  echo 'theme: ' . g:cvim_theme . '   (F5 next, F6 previous, :Theme name)'
-endfunction
-
 function! s:ThemeCmd(name) abort
   if a:name ==# ''
     echo 'themes: ' . join(s:order, ' ') . '   current: ' . get(g:, 'cvim_theme', '?')
@@ -314,8 +223,6 @@ function! s:ThemeComplete(A, L, P) abort
 endfunction
 
 command! -nargs=? -complete=customlist,s:ThemeComplete Theme call s:ThemeCmd(<q-args>)
-nnoremap <silent> <F5> :call <SID>Cycle(1)<CR>
-nnoremap <silent> <F6> :call <SID>Cycle(-1)<CR>
 
 " truecolor when the terminal says it can, else the 256-color fallback
 if has('termguicolors') && $COLORTERM =~# 'truecolor\|24bit'
@@ -341,169 +248,3 @@ set statusline=\ %n\ \ %<%f\ %m%r%h%w%=%{CvFt()}\ \|\ %l:%c\ \|\ %p%%\
 " the theme: $CVIM_THEME (set by `theme` in bashrc.sh) wins, else the knob above
 call s:Apply($CVIM_THEME !=# '' && has_key(s:themes, $CVIM_THEME) ? $CVIM_THEME : s:default_theme)
 
-" ===========================================================================
-"  WORKFLOW HELPERS
-" ===========================================================================
-
-" :Ff name   find files by (part of) name, below the cwd -> quickfix list
-function! s:FindFiles(pat) abort
-  let l:cmd = 'find . \( -name .git -o -name .svn -o -name .hg -o -name node_modules \) -prune -o -type f -iname '
-    \ . shellescape('*' . a:pat . '*') . ' -print'
-  let l:files = systemlist(l:cmd)
-  if v:shell_error || empty(l:files)
-    echo 'no files match: ' . a:pat | return
-  endif
-  if len(l:files) == 1
-    execute 'edit ' . fnameescape(l:files[0]) | return
-  endif
-  let l:save = &errorformat
-  set errorformat=%f
-  cgetexpr sort(l:files)[:999]
-  let &errorformat = l:save
-  copen
-endfunction
-
-" :Gr text   grep below the cwd -> quickfix. Smartcase. Empty = word under cursor.
-function! s:Grep(pat) abort
-  let l:p = a:pat ==# '' ? expand('<cword>') : a:pat
-  let l:ic = l:p =~# '[A-Z]' ? '' : ' -i'
-  let l:cmd = 'grep -rnIH' . l:ic
-    \ . ' --exclude-dir=.git --exclude-dir=.svn --exclude-dir=.hg --exclude-dir=node_modules --exclude=tags'
-    \ . ' -e ' . shellescape(l:p) . ' .'
-  let l:out = systemlist(l:cmd)
-  if empty(l:out)
-    echo 'no matches: ' . l:p | return
-  endif
-  let l:save = &errorformat
-  set errorformat=%f:%l:%m
-  cgetexpr l:out[:2999]
-  let &errorformat = l:save
-  copen
-endfunction
-
-command! -nargs=1 Ff call s:FindFiles(<q-args>)
-command! -nargs=? Gr call s:Grep(<q-args>)
-
-" :Fmt   format the buffer: clang-format if installed, else Vim's own cindent
-function! s:Fmt() abort
-  let l:view = winsaveview()
-  if &filetype =~# '^\(c\|cpp\|cuda\|objc\|objcpp\)$' && executable('clang-format')
-    let l:out = systemlist('clang-format --assume-filename=' . shellescape(expand('%:p')), getline(1, '$'))
-    if v:shell_error == 0 && !empty(l:out)
-      silent keepjumps call setline(1, l:out)
-      if line('$') > len(l:out)
-        silent keepjumps execute (len(l:out) + 1) . ',$delete _'
-      endif
-      echo 'formatted with clang-format (honours .clang-format)'
-    else
-      echohl ErrorMsg | echo 'clang-format failed; buffer left untouched' | echohl None
-    endif
-  else
-    silent keepjumps normal! gg=G
-    echo 'formatted with built-in cindent (clang-format not found)'
-  endif
-  call winrestview(l:view)
-endfunction
-command! Fmt call s:Fmt()
-
-" :Trim  strip trailing whitespace
-command! Trim let s:v = winsaveview() | silent keepjumps %s/\s\+$//e | call winrestview(s:v)
-
-" :LastBuild  load the log written by `mk` (bashrc.sh) into quickfix
-function! s:LastBuild() abort
-  let l:log = (empty($XDG_CACHE_HOME) ? expand('~/.cache') : $XDG_CACHE_HOME) . '/compliant-vim/build.log'
-  if !filereadable(l:log) | echo 'no build log yet: run  mk make  in the shell' | return | endif
-  execute 'cfile ' . fnameescape(l:log)
-  cwindow
-endfunction
-command! LastBuild call s:LastBuild()
-
-" Recent-buffer list (most recently used first). Own bookkeeping so it works
-" on any Vim 8.x: no dependence on newer :ls flags.
-let s:mru = []
-function! s:Track() abort
-  let l:n = bufnr('%')
-  if !buflisted(l:n) || &buftype !=# '' | return | endif
-  call filter(s:mru, 'v:val != ' . l:n)
-  call insert(s:mru, l:n)
-endfunction
-augroup cvim_mru
-  autocmd!
-  autocmd BufEnter * call s:Track()
-augroup END
-
-function! s:Buffers() abort
-  call filter(s:mru, 'bufexists(v:val) && buflisted(v:val)')
-  if len(s:mru) < 2
-    echo 'only one buffer open' | return
-  endif
-  let l:i = 0
-  for l:b in s:mru
-    let l:i += 1
-    let l:name = bufname(l:b) ==# '' ? '[No Name]' : bufname(l:b)
-    echo printf('%3d  %s%s%s', l:i, l:b == bufnr('%') ? '%' : ' ', getbufvar(l:b, '&modified') ? '+' : ' ', ' ' . l:name)
-  endfor
-  let l:c = input('go to # (Enter cancels): ')
-  redraw
-  if l:c =~# '^\d\+$' && l:c >= 1 && l:c <= len(s:mru)
-    execute 'buffer ' . s:mru[l:c - 1]
-  endif
-endfunction
-
-" ---- keys -----------------------------------------------------------------
-nnoremap Y y$
-nnoremap n nzzzv
-nnoremap N Nzzzv
-vnoremap < <gv
-vnoremap > >gv
-nnoremap <silent> <leader>n :nohlsearch<CR>
-
-" files and buffers
-nnoremap <leader><leader> <C-^>
-nnoremap <silent> <leader>b :call <SID>Buffers()<CR>
-nnoremap <leader>o :browse oldfiles<CR>
-nnoremap <silent> ]b :bnext<CR>
-nnoremap <silent> [b :bprevious<CR>
-nnoremap <silent> <leader>d :bdelete<CR>
-nnoremap <silent> <leader>e :Lexplore<CR>
-nnoremap <silent> - :Explore<CR>
-
-" search and build
-nnoremap <leader>f :Ff<Space>
-nnoremap <leader>g :Gr<Space>
-nnoremap <silent> <leader>* :Gr<CR>
-nnoremap <silent> <leader>m :make<CR>
-nnoremap <silent> <leader>= :Fmt<CR>
-nnoremap <silent> <leader>q :if empty(filter(getwininfo(), 'v:val.quickfix'))<Bar>copen<Bar>else<Bar>cclose<Bar>endif<CR>
-nnoremap <silent> ]q :cnext<CR>
-nnoremap <silent> [q :cprevious<CR>
-
-" windows
-nnoremap <C-h> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
-
-" ---- :Keys cheat sheet ----------------------------------------------------
-function! s:Keys() abort
-  let l:t = [
-    \ 'COMPLIANT-VIM KEYS          (leader = <Space>)       q or :q closes this',
-    \ '',
-    \ 'THEMES   F5 next   F6 previous   :Theme <name>   (night warm frost hc paper)',
-    \ 'FILES    <Space><Space>  previous file (toggle)     <Space>b   buffers, recent first, then type number',
-    \ '         <Space>o  recently opened files (all sessions)   ]b [b  next/prev buffer',
-    \ '         -  netrw for current dir   <Space>e  toggle netrw sidebar   <Space>d  close buffer',
-    \ 'SEARCH   <Space>f name  find files -> list     <Space>g text  grep -> list     <Space>*  grep word under cursor',
-    \ '         list window: Enter / mouse click jumps   ]q [q next/prev result   <Space>q toggle list',
-    \ 'BUILD    <Space>m  :make        :LastBuild  load errors from shell `mk`',
-    \ 'FORMAT   <Space>=  :Fmt (clang-format or cindent)   :Trim  strip trailing space   =G  reindent file',
-    \ 'WINDOWS  Ctrl-h/j/k/l move   :split  :vsplit   Ctrl-w o  only this one',
-    \ 'MISC     <Space>n  clear search highlight   Y  yank to end of line   %  jump matching bracket/#if',
-    \ ]
-  new
-  setlocal buftype=nofile bufhidden=wipe noswapfile nonumber norelativenumber nolist
-  call setline(1, l:t)
-  setlocal nomodifiable
-  nnoremap <buffer> <silent> q :close<CR>
-endfunction
-command! Keys call s:Keys()
