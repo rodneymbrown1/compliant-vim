@@ -199,6 +199,8 @@ function! s:Apply(name) abort
   call s:H('Conceal',      p.dim,   '',   '')
 
   call s:StatusIns(0)
+  " optional companion file (tools.vim) can re-tint extra groups after a theme change
+  if exists('*CvAfterTheme') | call CvAfterTheme(p, function('s:H')) | endif
   redraw!
 endfunction
 

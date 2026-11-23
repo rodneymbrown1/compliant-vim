@@ -123,6 +123,17 @@ PROMPT_DIRTRIM=3
 _cv_palette "$CVIM_THEME" || { CVIM_THEME=night; _cv_palette night; }
 export CVIM_THEME
 _cv_apply
+# vim's :btt leaves a directory here; cd to it at the next prompt, once.
+_cv_btt() {
+  local f=~/.cache/compliant-vim/cwd d
+  [ -f "$f" ] || return 0
+  d=$(<"$f"); rm -f "$f"
+  [ -d "$d" ] && cd "$d"
+}
+case ";${PROMPT_COMMAND:-};" in
+  *";_cv_btt;"*) ;;
+  *) PROMPT_COMMAND="_cv_btt${PROMPT_COMMAND:+;$PROMPT_COMMAND}" ;;
+esac
 case ";${PROMPT_COMMAND:-};" in
   *";_cv_prompt;"*) ;;
   *) PROMPT_COMMAND="_cv_prompt${PROMPT_COMMAND:+;$PROMPT_COMMAND}" ;;
