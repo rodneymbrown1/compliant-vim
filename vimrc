@@ -212,6 +212,13 @@ function! s:StatusIns(ins) abort
   call s:H('StatusLine', p.mlfg, a:ins ? p.ins : p.ml, 'bold')
 endfunction
 
+function! s:Cycle(dir) abort
+  let l:i = index(s:order, get(g:, 'cvim_theme', s:default_theme))
+  let l:i = (l:i + a:dir + len(s:order)) % len(s:order)
+  call s:Apply(s:order[l:i])
+  echo 'theme: ' . g:cvim_theme . '   (F5 next, F6 previous, :Theme name)'
+endfunction
+
 function! s:ThemeCmd(name) abort
   if a:name ==# ''
     echo 'themes: ' . join(s:order, ' ') . '   current: ' . get(g:, 'cvim_theme', '?')
@@ -225,6 +232,8 @@ function! s:ThemeComplete(A, L, P) abort
 endfunction
 
 command! -nargs=? -complete=customlist,s:ThemeComplete Theme call s:ThemeCmd(<q-args>)
+nnoremap <silent> <F5> :call <SID>Cycle(1)<CR>
+nnoremap <silent> <F6> :call <SID>Cycle(-1)<CR>
 
 " truecolor when the terminal says it can, else the 256-color fallback
 if has('termguicolors') && $COLORTERM =~# 'truecolor\|24bit'
