@@ -235,6 +235,12 @@ command! -nargs=? -complete=customlist,s:ThemeComplete Theme call s:ThemeCmd(<q-
 nnoremap <silent> <F5> :call <SID>Cycle(1)<CR>
 nnoremap <silent> <F6> :call <SID>Cycle(-1)<CR>
 
+" tmux/screen terminfo can report 8 colors (e.g. missing entry on RHEL): the
+" themes need 256, so force it before anything is drawn
+if &term =~# '^\(tmux\|screen\)' && &t_Co < 256
+  set t_Co=256
+endif
+
 " truecolor when the terminal says it can, else the 256-color fallback
 if has('termguicolors') && $COLORTERM =~# 'truecolor\|24bit'
   if &term =~# '^\(tmux\|screen\)'
